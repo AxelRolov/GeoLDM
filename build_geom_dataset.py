@@ -81,29 +81,31 @@ def load_split_data(conformation_file, val_proportion=0.1, test_proportion=0.1,
     data_list = np.split(conformers, split_indices)
 
     # Filter based on molecule size.
+
     if filter_size is not None:
         # Keep only molecules <= filter_size
         data_list = [molecule for molecule in data_list
                      if molecule.shape[0] <= filter_size]
 
         assert len(data_list) > 0, 'No molecules left after filter.'
-
     # CAREFUL! Only for first time run:
-    # perm = np.random.permutation(len(data_list)).astype('int32')
-    # print('Warning, currently taking a random permutation for '
-    #       'train/val/test partitions, this needs to be fixed for'
-    #       'reproducibility.')
-    # assert not os.path.exists(os.path.join(base_path, 'geom_permutation.npy'))
-    # np.save(os.path.join(base_path, 'geom_permutation.npy'), perm)
-    # del perm
-
+    """
+    perm = np.random.permutation(len(data_list)).astype('int32')
+    print('Warning, currently taking a random permutation for '
+           'train/val/test partitions, this needs to be fixed for'
+           'reproducibility.')
+    assert not os.path.exists(os.path.join(base_path, 'geom_permutation.npy'))
+    np.save(os.path.join(base_path, 'geom_permutation.npy'), perm)
+    del perm
+    """
     perm = np.load(os.path.join(base_path, 'geom_permutation.npy'))
     data_list = [data_list[i] for i in perm]
 
     num_mol = len(data_list)
     val_index = int(num_mol * val_proportion)
     test_index = val_index + int(num_mol * test_proportion)
-    val_data, test_data, train_data = np.split(data_list, [val_index, test_index])
+    #val_data, test_data, train_data = np.split(data_list, [val_index, test_index])
+    val_data, test_data, train_data = data_list[0: val_index], data_list[val_index: test_index], data_list[test_index:]
     return train_data, val_data, test_data
 
 
@@ -238,7 +240,7 @@ if __name__ == '__main__':
     parser.add_argument("--conformations", type=int, default=30,
                         help="Max number of conformations kept for each molecule.")
     parser.add_argument("--remove_h", action='store_true', help="Remove hydrogens from the dataset.")
-    parser.add_argument("--data_dir", type=str, default='~/diffusion/data/geom/')
-    parser.add_argument("--data_file", type=str, default="drugs_crude.msgpack")
+    parser.add_argument("--data_dir", type=str, default='/mnt/largessd/alexey/GeoLDM/data/geom/')
+    parser.add_argument("--data_file", type=str, default="/mnt/largessd/alexey/GeoLDM/data/geom/drugs_crude.msgpack")
     args = parser.parse_args()
     extract_conformers(args)

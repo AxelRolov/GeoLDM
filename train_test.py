@@ -92,6 +92,7 @@ def train_epoch(args, loader, epoch, model, model_dp, model_ema, ema, device, dt
         if args.break_train_epoch:
             break
     wandb.log({"Train Epoch NLL": np.mean(nll_epoch)}, commit=False)
+    torch.cuda.empty_cache()
 
 
 def check_mask_correct(variables, node_mask):
